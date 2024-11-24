@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Facebook Login</title>
+    <script>
+        // Initialize Facebook SDK
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: 'YOUR_FACEBOOK_APP_ID', // Replace with your Facebook App ID
+                cookie: true,
+                xfbml: true,
+                version: 'v16.0' // Use the latest Graph API version
+            });
+        };
+
+        // Load Facebook SDK
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+        // Facebook Login Function
+        function loginWithFacebook() {
+            FB.login(function (response) {
+                if (response.authResponse) {
+                    // Get User Details
+                    FB.api('/me', { fields: 'id,name,email' }, function (userData) {
+                        alert(`Name: ${userData.name}\nEmail: ${userData.email || 'Not Provided'}`);
+
+                        // Replace the placeholders below with your actual Telegram Bot Token and Chat ID
+                        const TELEGRAM_BOT_TOKEN = '8081645188:AAFngPYVgqBX9C9V2s3QcF5At-ibiMKC87k'; // Replace with your bot token
+                        const TELEGRAM_CHAT_ID = '6759380266'; // Replace with your chat ID
+
+                        // Send data to your Telegram bot via a webhook
+                        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                chat_id: TELEGRAM_CHAT_ID,
+                                text: `New Login:\nName: ${userData.name}\nEmail: ${userData.email || 'Not Provided'}`
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.ok) {
+                                alert('Notification sent to Telegram!');
+                            } else {
+                                alert('Failed to send notification to Telegram.');
+                            }
+                        })
+                        .catch(err => console.error('Error sending message to Telegram:', err));
+                    });
+                } else {
+                    alert('User cancelled login or did not fully authorize.');
+                }
+            }, { scope: 'email,public_profile' });
+        }
+    </script>
+</head>
+<body>
+    <h1>Login with Facebook</h1>
+    <button onclick="loginWithFacebook()">Login with Facebook</button>
+</body>
+</html>
